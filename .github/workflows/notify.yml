@@ -1,0 +1,33 @@
+name: Notify new study content
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    # Run every 6PM at Monday, Wednesday, Friday
+    - cron: '0 18 * * 1,3,5'
+  workflow_dispatch:
+
+jobs:
+  parse-questions:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Fetch, parse and send notifications
+      env:
+        SHEET_URL: ${{ secrets.SHEET_URL }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        python fetch_data.py
